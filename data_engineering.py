@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[145]:
+# In[112]:
 
 
 import pandas as pd
@@ -10,34 +10,34 @@ from sodapy import Socrata
 app_token = "6mndJ6dQB2dsu0CXE1RFz9AGA"
 
 
-# In[146]:
+# In[113]:
 
 
 ##EXTRACT
 url="https://data.cityofnewyork.us/resource/qiz3-axqb.json"
 
 
-# In[147]:
+# In[114]:
 
 
 df=pd.read_json(url)
 
 
-# In[148]:
+# In[115]:
 
 
 #shows first 5 rows of the dataset
 df.head()
 
 
-# In[149]:
+# In[116]:
 
 
 #provides list of columns in dataset
 df.columns
 
 
-# In[150]:
+# In[117]:
 
 
 ##TRANSFORM
@@ -46,7 +46,7 @@ df.columns
 df['datetime']=pd.to_datetime(df['date'].astype(str) + ' ' + df['time'].astype(str), errors='coerce')
 
 
-# In[151]:
+# In[118]:
 
 
 #removes whitespace from dataframe
@@ -54,14 +54,14 @@ df=df.apply(lambda x: x.str.strip() if x.dtype =='object' else x)
 df.head()
 
 
-# In[152]:
+# In[119]:
 
 
 #prints first val of street name col
 df['on_street_name'][0]
 
 
-# In[153]:
+# In[120]:
 
 
 #subsets columns of interest
@@ -69,7 +69,7 @@ columns_i_want = ['unique_key', 'latitude', 'longitude', 'on_street_name', 'cros
                  'number_of_persons_injured','contributing_factor_vehicle_1','vehicle_type_code1', 'vehicle_type_code2','datetime']
 
 
-# In[154]:
+# In[121]:
 
 
 #creates new dataframe from subsetted columns
@@ -77,42 +77,42 @@ df=df[columns_i_want]
 df.head()
 
 
-# In[155]:
+# In[122]:
 
 
 #reduces vehicle types to unique values
 df['vehicle_type_code1'].unique()
 
 
-# In[156]:
+# In[123]:
 
 
 #reduces vehicle types to unique values
 df['vehicle_type_code2'].unique()
 
 
-# In[157]:
+# In[124]:
 
 
 #removes duplicates from 'on_street_name' and 'cross_street'
 street_names=set(list(df['on_street_name'].unique())+list(df['cross_street_name'].unique()))
 
 
-# In[158]:
+# In[125]:
 
 
 #removes duplicate values from contributing factor
 contributing_factor=list(df['contributing_factor_vehicle_1'].unique())
 
 
-# In[159]:
+# In[126]:
 
 
 #removes duplicate values between vehicle type1 and 2
 vehicle_types=set(list(df['vehicle_type_code1'].unique())+list(df['vehicle_type_code2'].unique()))
 
 
-# In[160]:
+# In[127]:
 
 
 #creates function to create dictionary out of col values
@@ -127,31 +127,31 @@ new_street_names_dict=create_table_dict(street_names)
 new_contributing_factor_dict=create_table_dict(contributing_factor)
 
 
-# In[161]:
+# In[128]:
 
 
 #creates dataframe from dictionary
 vehicle_df=pd.DataFrame.from_dict(new_vehicle_dict, orient="index").reset_index()
-#vehicle_df.columns=['vehicle_id','vehicle_type']
+vehicle_df.columns=['vehicle_id','vehicle_type']
 
 
-# In[162]:
+# In[129]:
 
 
 #creates dataframe from dictionary
 street_df=pd.DataFrame.from_dict(new_street_names_dict, orient="index").reset_index()
-#street_df.columns=['street_id','street_name']
+street_df.columns=['street_id','street_name']
 
 
-# In[163]:
+# In[130]:
 
 
 #creates dataframe from dictionary
 contributing_factor_df=pd.DataFrame.from_dict(new_contributing_factor_dict, orient="index").reset_index()
-#contributing_factor_df.columns=['contributing_factor_id','contributing_factor']
+contributing_factor_df.columns=['contributing_factor_id','contributing_factor']
 
 
-# In[164]:
+# In[131]:
 
 
 vehicle_map = {y:x for x,y in new_vehicle_dict.items()}
@@ -159,7 +159,7 @@ df["vehicle_type_code1"].replace(vehicle_map, inplace=True)
 df["vehicle_type_code2"].replace(vehicle_map, inplace=True)
 
 
-# In[165]:
+# In[132]:
 
 
 street_replace = {y:x for x,y in new_street_names_dict.items()}
@@ -167,14 +167,14 @@ df["on_street_name"].replace(street_replace, inplace=True)
 df["cross_street_name"].replace(street_replace, inplace=True)
 
 
-# In[166]:
+# In[133]:
 
 
 factor_replace = {y:x for x,y in new_contributing_factor_dict.items()}
 df["contributing_factor_vehicle_1"].replace(factor_replace, inplace=True)
 
 
-# In[167]:
+# In[134]:
 
 
 #rename variables
@@ -187,7 +187,7 @@ collision_df=df.rename(columns={
     })
 
 
-# In[170]:
+# In[135]:
 
 
 ##LOAD
@@ -205,7 +205,7 @@ contributing_factor_df.to_sql(name = 'factors', con = engine, if_exists = 'repla
 collision_df.to_sql(name='collisions', con=engine, if_exists='append',index=False)
 
 
-# In[169]:
+# In[136]:
 
 
 #begin querying the dataset
@@ -213,15 +213,20 @@ connection=engine.connect()
 
 #SELECTS street id, name and number of persons injured orders greatest to least
 #JOIN collisions table to the streets table to link the ID's
-query="SELECT on_street_name_id, streets.street_name,number_of_persons_injured FROM collisions LEFT JOIN streetsON collisions.on_street_name_id = streets.street_idORDER BY number_of_persons_injured DESC"
+
+query="SELECT on_street_name_id, streets.street_name,number_of_persons_injured FROM collisions LEFT JOIN streets ON collisions.on_street_name_id = streets.street_id ORDER BY number_of_persons_injured DESC"
+
+
+# In[137]:
+
 
 results=connection.execute(query).fetchall()
 
 
-# In[ ]:
+# In[139]:
 
 
-
+results[0:15]
 
 
 # In[ ]:
