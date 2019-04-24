@@ -6,7 +6,7 @@ Analysis of NYC traffic patterns collected from NYC Open Data portal. Objective 
 Taylor Murrell
 
 ## Acknowledgements
-Barnard Computational Science Center
+[Barnard Computational Science Center](https://csc.barnard.edu/)
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
