@@ -1,11 +1,11 @@
-#CSC_Data_Engineering
+# CSC_Data_Engineering
 
 Analysis of NYC traffic patterns collected from NYC Open Data portal. Objective was to identify where the majority of crashes occur in the city using Python and SQL.
 
-##Author
+## Author
 Taylor Murrell
 
-##Acknowledgements
+## Acknowledgements
 Barnard Computational Science Center
 
 ## License
